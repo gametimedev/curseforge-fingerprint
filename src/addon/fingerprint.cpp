@@ -1,12 +1,29 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include "fingerprint.h"
+
+#ifdef _WIN32
+#include <locale>
+#include <codecvt>
+#endif
 
 namespace fingerprint {
 
   Buffer get_jar_contents(const char* jar_file_path) {
     int result;
-    FILE* jar_file = fopen(jar_file_path, "rb");
+    FILE* jar_file;
+
+    #ifdef _WIN32
+        // Convert char* to wchar_t* for Windows
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::wstring wide_path = converter.from_bytes(jar_file_path);
+        jar_file = _wfopen(wide_path.c_str(), L"rb");
+    #else
+        // Use fopen for other OS
+        jar_file = fopen(jar_file_path, "rb");
+    #endif
+
     if (jar_file == nullptr) {
       return Buffer();
     }
